@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+  labels:
+    app: fastapi
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: microwave88/fast-api:v1.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: db_postgres_password
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secrets
+                  key: db_postgres_password
+            - name: db_name
+              value: fastapi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 30000
+  selector:
+    app: fastapi
+  type: LoadBalancer
